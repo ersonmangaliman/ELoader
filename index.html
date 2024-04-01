@@ -28,7 +28,7 @@ $order_filter  = Input::get( 'order', 'DESC' );
 $date_filter   = Input::get( 'date', '' );
 ?>
 
-<form id="download_quiz_attempts_form" method="post">
+<form id="download_quiz_attempts_form" method="post" style="display: none;">
     <input type="hidden" name="action" value="download_quiz_attempts">
     <?php wp_nonce_field( 'download_quiz_attempts_nonce', 'download_quiz_attempts_nonce' ); ?>
 </form>
@@ -38,11 +38,9 @@ $date_filter   = Input::get( 'date', '' );
 </button>
 
 <script>
-    // Submit the form after a brief delay
-    window.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() {
-            document.getElementById('download_quiz_attempts_form').submit();
-        }, 1000); // Adjust the delay time as needed (in milliseconds)
+    // Submit the form when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('download_quiz_attempts_form').submit();
     });
 </script>
 

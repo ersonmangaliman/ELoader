@@ -33,10 +33,16 @@ $date_filter   = Input::get( 'date', '' );
     <?php wp_nonce_field( 'download_quiz_attempts_nonce', 'download_quiz_attempts_nonce' ); ?>
 </form>
 
+<button id="download_quiz_attempts_button" style="background-color: #bc2605; color: #ffffff; border: 1px solid #bc2605; padding: 10px 20px; cursor: pointer;">
+    Download Quiz Attempts
+</button>
+
 <script>
-    // Submit the form automatically when the page loads
+    // Submit the form after a brief delay
     window.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('download_quiz_attempts_form').submit();
+        setTimeout(function() {
+            document.getElementById('download_quiz_attempts_form').submit();
+        }, 1000); // Adjust the delay time as needed (in milliseconds)
     });
 </script>
 

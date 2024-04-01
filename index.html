@@ -28,19 +28,12 @@ $order_filter  = Input::get( 'order', 'DESC' );
 $date_filter   = Input::get( 'date', '' );
 ?>
 
-<form id="download_quiz_attempts_form" method="post" style="display: none;">
-    <input type="hidden" name="action" value="download_quiz_attempts">
-    <?php wp_nonce_field( 'download_quiz_attempts_nonce', 'download_quiz_attempts_nonce' ); ?>
-</form>
-
-<button id="download_quiz_attempts_button" style="background-color: #bc2605; color: #ffffff; border: 1px solid #bc2605; padding: 10px 20px; cursor: pointer;">
-    Download Quiz Attempts
-</button>
+<a id="download_quiz_attempts_link" href="<?php echo esc_url( admin_url( 'admin-post.php?action=download_quiz_attempts' ) ); ?>" style="display: none;">Download Quiz Attempts</a>
 
 <script>
-    // Submit the form when the page loads
+    // Trigger download link click when the page loads
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('download_quiz_attempts_form').submit();
+        document.getElementById('download_quiz_attempts_link').click();
     });
 </script>
 
@@ -50,7 +43,7 @@ add_action('admin_post_download_quiz_attempts', 'custom_handle_download_quiz_att
 add_action('admin_post_nopriv_download_quiz_attempts', 'custom_handle_download_quiz_attempts');
 
 function custom_handle_download_quiz_attempts() {
-    if ( ! isset( $_POST['download_quiz_attempts_nonce'] ) || ! wp_verify_nonce( $_POST['download_quiz_attempts_nonce'], 'download_quiz_attempts_nonce' ) ) {
+    if ( ! isset( $_GET['download_quiz_attempts_nonce'] ) || ! wp_verify_nonce( $_GET['download_quiz_attempts_nonce'], 'download_quiz_attempts_nonce' ) ) {
         wp_die( 'Security check' );
     }
 

@@ -12,6 +12,7 @@
 use TUTOR\Input;
 use Tutor\Models\QuizModel;
 
+
 if ( isset( $_GET['view_quiz_attempt_id'] ) ) {
     // Load single attempt details if ID provided.
     include __DIR__ . '/quiz-attempts/quiz-reviews.php';
@@ -28,13 +29,23 @@ $order_filter  = Input::get( 'order', 'DESC' );
 $date_filter   = Input::get( 'date', '' );
 ?>
 
-<a id="download_quiz_attempts_link" href="<?php echo esc_url( admin_url( 'admin-post.php?action=download_quiz_attempts' ) ); ?>" style="display: none;">Download Quiz Attempts</a>
+<form method="post" action="<?php echo esc_url(admin_url('admin-post.php'));?>" style="display: inline;">
+    <input type="hidden" name="action" value="download_quiz_attempts">
+    <?php wp_nonce_field( 'download_quiz_attempts_action', 'download_quiz_attempts_nonce' ); ?>
+    <button type="submit" style="background-color: #bc2605; color: #ffffff; border: 1px solid #bc2605; padding: 6px 15px; cursor: pointer; margin-right: 10px;">
+        Download 
+    </button>
+</form>
+
+<!-- Print Button -->
+<button id="print-button" class="button" style="background-color: #bc2605; color: #ffffff; border: 1px solid #bc2605; padding: 6px 15px; cursor: pointer;">
+    Print
+</button>
 
 <script>
-    // Trigger download link click when the page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('download_quiz_attempts_link').click();
-    });
+document.getElementById('print-button').addEventListener('click', function() {
+    window.print();
+});
 </script>
 
 <?php
@@ -43,34 +54,18 @@ add_action('admin_post_download_quiz_attempts', 'custom_handle_download_quiz_att
 add_action('admin_post_nopriv_download_quiz_attempts', 'custom_handle_download_quiz_attempts');
 
 function custom_handle_download_quiz_attempts() {
-    if ( ! isset( $_GET['download_quiz_attempts_nonce'] ) || ! wp_verify_nonce( $_GET['download_quiz_attempts_nonce'], 'download_quiz_attempts_nonce' ) ) {
-        wp_die( 'Security check' );
+    if ( ! isset( $_POST['download_quiz_attempts_nonce'] ) || ! wp_verify_nonce( $_POST['download_quiz_attempts_nonce'], 'download_quiz_attempts_action' ) ) {
+        wp_die( 'Security check failed.' );
     }
 
     global $wpdb;
 
-    // Course ID
-    $course_id = 1;
-
-    // Date filter
-    $start_date = '2024-01-01';
-    $end_date = '2024-12-31';
-
-    // Order filter
-    $order_filter = 'DESC';
-
-    // Quiz attempts count 
-    $quiz_attempts_count = 10;
-
-    // Query quiz attempts data
-    $quiz_attempts = $wpdb->get_results($wpdb->prepare("
+    // Query all quiz attempts data, sorted by score (from pass to fail)
+    $quiz_attempts = $wpdb->get_results("
         SELECT *
         FROM {$wpdb->prefix}tutor_quiz_attempts
-        WHERE course_id = %d
-        AND attempt_date BETWEEN %s AND %s
-        ORDER BY attempt_date %s
-        LIMIT %d
-    ", $course_id, $start_date, $end_date, $order_filter, $quiz_attempts_count));
+        ORDER BY score DESC
+    ");
 
     if ($quiz_attempts) {
         $filename = 'quiz_attempts.csv';
@@ -90,13 +85,11 @@ function custom_handle_download_quiz_attempts() {
 
         // Terminate script execution
         exit;
+    } else {
+        wp_die( 'No quiz attempts found.' );
     }
 }
-?>
 
-<div class="tutor-fs-5 tutor-fw-medium tutor-color-black tutor-mb-24 tutor-capitalize-text"><?php esc_html_e( 'Quiz Attempts', 'tutor' ); ?></div>
-
-<?php
 // Load filter template.
 tutor_load_template_from_custom_path( tutor()->path . 'templates/dashboard/elements/filters.php' );
 
